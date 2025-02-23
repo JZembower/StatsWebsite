@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPM Analysis</title>
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <h1>SPM Paired T-Test Analysis</h1>
+    <input type="file" id="fileInput" accept=".csv, .xlsx">
+    <button onclick="uploadFile()">Upload File</button>
+    <div id="columnSelection" style="display: none;">
+        <h3>Select Columns</h3>
+        <select id="colLeft"></select>
+        <select id="colRight"></select>
+        <button onclick="runAnalysis()">Run Analysis</button>
+    </div>
+    <div id="output"></div>
+</body>
+</html>
