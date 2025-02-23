@@ -1,3 +1,5 @@
+const backendUrl = "https://spm-backend.onrender.com";
+
 async function uploadFile() {
     const fileInput = document.getElementById('fileInput').files[0];
     if (!fileInput) {
@@ -8,22 +10,35 @@ async function uploadFile() {
     const formData = new FormData();
     formData.append("file", fileInput);
     
-    const response = await fetch("http://127.0.0.1:8000/upload/", { method: "POST", body: formData });
-    const data = await response.json();
-
-    document.getElementById("columnSelection").style.display = "block";
-    const colLeftSelect = document.getElementById("colLeft");
-    const colRightSelect = document.getElementById("colRight");
-
-    data.columns.forEach(col => {
-        colLeftSelect.add(new Option(col, col));
-        colRightSelect.add(new Option(col, col));
-    });
+    try {
+        const response = await fetch(`${backendUrl}/upload/`, { method: "POST", body: formData });
+        if (!response.ok) throw new Error("Upload failed");
+        
+        const data = await response.json();
+        document.getElementById("columnSelection").style.display = "block";
+        const colLeftSelect = document.getElementById("colLeft");
+        const colRightSelect = document.getElementById("colRight");
+        
+        colLeftSelect.innerHTML = "";
+        colRightSelect.innerHTML = "";
+        
+        data.columns.forEach(col => {
+            colLeftSelect.add(new Option(col, col));
+            colRightSelect.add(new Option(col, col));
+        });
+    } catch (error) {
+        alert("Error: " + error.message);
+    }
 }
 
 async function runAnalysis() {
     const colLeft = document.getElementById("colLeft").value;
     const colRight = document.getElementById("colRight").value;
+    
+    if (!colLeft || !colRight) {
+        alert("Please select both columns.");
+        return;
+    }
     
     const fileInput = document.getElementById('fileInput').files[0];
     const formData = new FormData();
@@ -31,12 +46,13 @@ async function runAnalysis() {
     formData.append("col_left", colLeft);
     formData.append("col_right", colRight);
     
-    const response = await fetch("http://127.0.0.1:8000/analyze/", { method: "POST", body: formData });
-    
-    if (response.ok) {
+    try {
+        const response = await fetch(`${backendUrl}/analyze/`, { method: "POST", body: formData });
+        if (!response.ok) throw new Error("Analysis failed");
+        
         const imageUrl = URL.createObjectURL(await response.blob());
         document.getElementById("output").innerHTML = `<img src="${imageUrl}" alt="SPM Analysis Result">`;
-    } else {
-        alert("Error processing analysis");
+    } catch (error) {
+        alert("Error: " + error.message);
     }
 }
