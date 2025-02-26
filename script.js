@@ -1,7 +1,6 @@
 const backendUrl = "https://spm-backend.onrender.com"; 
 
-// Function to handle file upload and dynamically populate column selection
-async function uploadFile(page, fileInputId = "fileInput", columnDropdownId = null) {
+async function uploadFile(page, fileInputId, columnDropdownId) {
     const fileInput = document.getElementById(fileInputId).files[0];
     if (!fileInput) {
         alert("Please select a file.");
@@ -12,34 +11,27 @@ async function uploadFile(page, fileInputId = "fileInput", columnDropdownId = nu
     formData.append("file", fileInput);
 
     try {
-        const response = await fetch(`${backendUrl}/upload/`, { method: "POST", body: formData });
-        if (!response.ok) throw new Error("Upload failed");
+        const response = await fetch(`${backendUrl}/upload/`, { 
+            method: "POST", 
+            body: formData 
+        });
+
+        if (!response.ok) {
+            throw new Error(`Upload failed with status: ${response.status}`);
+        }
 
         const data = await response.json();
         document.getElementById("columnSelection").style.display = "block";
 
-        // If a specific dropdown is provided (for dual file selection)
-        if (columnDropdownId) {
-            populateDropdown(columnDropdownId, data.columns);
-        } else {
-            // Populate all relevant dropdowns dynamically
-            if (document.getElementById("colLeft")) {
-                populateDropdown("colLeft", data.columns);
-            }
-            if (document.getElementById("colRight")) {
-                populateDropdown("colRight", data.columns);
-            }
-            if (document.getElementById("dependentVar")) {
-                populateDropdown("dependentVar", data.columns);
-            }
-            if (document.getElementById("independentVar")) {
-                populateDropdown("independentVar", data.columns);
-            }
-        }
+        // Update the correct dropdown
+        populateDropdown(columnDropdownId, data.columns);
+
     } catch (error) {
-        alert("Error: " + error.message);
+        console.error("Fetch error:", error);
+        alert("Error uploading file: " + error.message);
     }
 }
+
 
 // Populate dropdowns with column names
 function populateDropdown(elementId, columns) {
