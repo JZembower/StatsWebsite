@@ -17,11 +17,17 @@
         <input type="file" id="fileInput2" name="file2" onchange="uploadFile('SPM', 'fileInput2', 'colRight')" required>
 
         <div id="columnSelection" style="display:none;">
-            <label for="colLeft">Select Column from Dataset 1:</label>
-            <select id="colLeft" name="colLeft"></select>
+            <h3>Select Columns for Analysis</h3>
 
-            <label for="colRight">Select Column from Dataset 2:</label>
-            <select id="colRight" name="colRight"></select>
+            <label for="colLeft">Select Column from First Dataset:</label>
+            <select id="colLeft" name="colLeft">
+                <option value="">-- Select Column --</option>
+            </select>
+
+            <label for="colRight">Select Column from Second Dataset:</label>
+            <select id="colRight" name="colRight">
+                <option value="">-- Select Column --</option>
+            </select>
         </div>
 
         <button type="submit">Analyze</button>
