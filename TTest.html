@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Test Analysis</title>
+    <script>
+        function calculateTTest() {
+            const group1 = document.getElementById('group1').value.split(',').map(Number);
+            const group2 = document.getElementById('group2').value.split(',').map(Number);
+
+            const mean = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+            const variance = arr => {
+                const m = mean(arr);
+                return arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / (arr.length - 1);
+            };
+
+            const mean1 = mean(group1);
+            const mean2 = mean(group2);
+            const var1 = variance(group1);
+            const var2 = variance(group2);
+
+            const tValue = (mean1 - mean2) / Math.sqrt((var1 / group1.length) + (var2 / group2.length));
+            document.getElementById('result').innerText = `T-Value: ${tValue.toFixed(2)}`;
+        }
+    </script>
+</head>
+<body>
+    <h1>T-Test Analysis</h1>
+    <form onsubmit="event.preventDefault(); calculateTTest();">
+        <label for="group1">Group 1 Data (comma separated):</label><br>
+        <input type="text" id="group1" name="group1"><br><br>
+        <label for="group2">Group 2 Data (comma separated):</label><br>
+        <input type="text" id="group2" name="group2"><br><br>
+        <input type="submit" value="Calculate T-Test">
+    </form>
+    <p id="result"></p>
+</body>
+</html>
