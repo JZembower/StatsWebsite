@@ -23,15 +23,38 @@
             const tValue = (mean1 - mean2) / Math.sqrt((var1 / group1.length) + (var2 / group2.length));
             document.getElementById('result').innerText = `T-Value: ${tValue.toFixed(2)}`;
         }
+
+        function updateColumns() {
+            const columns = document.getElementById('columns').value.split(',');
+            const group1Select = document.getElementById('group1');
+            const group2Select = document.getElementById('group2');
+
+            group1Select.innerHTML = '';
+            group2Select.innerHTML = '';
+
+            columns.forEach(column => {
+                const option1 = document.createElement('option');
+                option1.value = column;
+                option1.text = column;
+                group1Select.appendChild(option1);
+
+                const option2 = document.createElement('option');
+                option2.value = column;
+                option2.text = column;
+                group2Select.appendChild(option2);
+            });
+        }
     </script>
 </head>
 <body>
     <h1>T-Test Analysis</h1>
     <form onsubmit="event.preventDefault(); calculateTTest();">
-        <label for="group1">Group 1 Data (comma separated):</label><br>
-        <input type="text" id="group1" name="group1"><br><br>
-        <label for="group2">Group 2 Data (comma separated):</label><br>
-        <input type="text" id="group2" name="group2"><br><br>
+        <label for="columns">Columns (comma separated):</label><br>
+        <input type="text" id="columns" name="columns" oninput="updateColumns()"><br><br>
+        <label for="group1">Group 1 Column:</label><br>
+        <select id="group1" name="group1"></select><br><br>
+        <label for="group2">Group 2 Column:</label><br>
+        <select id="group2" name="group2"></select><br><br>
         <input type="submit" value="Calculate T-Test">
     </form>
     <p id="result"></p>
