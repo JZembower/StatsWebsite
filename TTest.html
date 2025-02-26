@@ -5,25 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T-Test Analysis</title>
     <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>T-Test Analysis</h1>
+    
     <form onsubmit="event.preventDefault(); runAnalysis('TTest');">
-        <label for="fileInput">Upload Dataset:</label>
-        <input type="file" id="fileInput" name="file" onchange="uploadFile('TTest')" required>
+        <label for="fileInput">Upload CSV/Excel:</label>
+        <input type="file" id="fileInput" name="file" onchange="uploadFile('TTest', 'fileInput')" required>
 
         <div id="columnSelection" style="display:none;">
-            <label for="colLeft">Column 1:</label>
+            <label for="colLeft">Select Column 1:</label>
             <select id="colLeft" name="colLeft"></select>
 
-            <label for="colRight">Column 2:</label>
+            <label for="colRight">Select Column 2:</label>
             <select id="colRight" name="colRight"></select>
         </div>
 
         <button type="submit">Analyze</button>
     </form>
+
     <h2>Results:</h2>
     <div id="output"></div>
 </body>
 </html>
+

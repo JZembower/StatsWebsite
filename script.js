@@ -1,7 +1,7 @@
-const backendUrl = "http://127.0.0.1:5000"; 
+const backendUrl = "http://127.0.0.1:5000"; // Change this when deploying
 
 // Function to handle file upload and populate column selection
-async function uploadFile(page, fileInputId, columnDropdownId) {
+async function uploadFile(page, fileInputId) {
     const fileInput = document.getElementById(fileInputId).files[0];
     if (!fileInput) {
         alert("Please select a file.");
@@ -23,7 +23,20 @@ async function uploadFile(page, fileInputId, columnDropdownId) {
 
         const data = await response.json();
         document.getElementById("columnSelection").style.display = "block";
-        populateDropdown(columnDropdownId, data.columns);
+
+        if (document.getElementById("colLeft")) {
+            populateDropdown("colLeft", data.columns);
+        }
+        if (document.getElementById("colRight")) {
+            populateDropdown("colRight", data.columns);
+        }
+        if (document.getElementById("dependentVar")) {
+            populateDropdown("dependentVar", data.columns);
+        }
+        if (document.getElementById("independentVar")) {
+            populateDropdown("independentVar", data.columns);
+        }
+
     } catch (error) {
         console.error("Fetch error:", error);
         alert("Error uploading file: " + error.message);
@@ -37,32 +50,61 @@ function populateDropdown(elementId, columns) {
     columns.forEach(col => select.add(new Option(col, col)));
 }
 
-// Function to handle SPM Moving Average Overlay Analysis
+// Function to handle different analyses dynamically
 async function runAnalysis(page) {
-    const file1 = document.getElementById('fileInput1').files[0];
-    const file2 = document.getElementById('fileInput2').files[0];
-    const col1 = document.getElementById("colLeft").value;
-    const col2 = document.getElementById("colRight").value;
+    let formData = new FormData();
+    let endpoint = "";
 
-    if (!file1 || !file2 || !col1 || !col2) {
-        alert("Please upload both datasets and select columns.");
-        return;
+    switch (page) {
+        case "PCA":
+            const pcaFile = document.getElementById("fileInput").files[0];
+            if (!pcaFile) {
+                alert("Please upload a file.");
+                return;
+            }
+            formData.append("file", pcaFile);
+            formData.append("components", document.getElementById("components").value || 2);
+            endpoint = "/pca/";
+            break;
+
+        case "TTest":
+            const tTestFile = document.getElementById("fileInput").files[0];
+            if (!tTestFile) {
+                alert("Please upload a file.");
+                return;
+            }
+            formData.append("file", tTestFile);
+            formData.append("col_left", document.getElementById("colLeft").value);
+            formData.append("col_right", document.getElementById("colRight").value);
+            endpoint = "/ttest/";
+            break;
+
+        case "ANOVA":
+            const anovaFile = document.getElementById("fileInput").files[0];
+            if (!anovaFile) {
+                alert("Please upload a file.");
+                return;
+            }
+            formData.append("file", anovaFile);
+            formData.append("dependent_var", document.getElementById("dependentVar").value);
+            formData.append("independent_var", document.getElementById("independentVar").value);
+            endpoint = "/anova/";
+            break;
+
+        default:
+            alert("Invalid analysis type.");
+            return;
     }
 
-    const formData = new FormData();
-    formData.append("file1", file1);
-    formData.append("file2", file2);
-    formData.append("col1", col1);
-    formData.append("col2", col2);
-
     try {
-        const response = await fetch(`${backendUrl}/moving_avg_overlay`, { method: "POST", body: formData });
+        const response = await fetch(`${backendUrl}${endpoint}`, { method: "POST", body: formData });
         if (!response.ok) throw new Error("Analysis failed");
 
         const imageUrl = URL.createObjectURL(await response.blob());
-        document.getElementById("output").innerHTML = `<img src="${imageUrl}" alt="SPM Analysis Result">`;
+        document.getElementById("output").innerHTML = `<img src="${imageUrl}" alt="${page} Analysis Result">`;
     } catch (error) {
         alert("Error: " + error.message);
     }
 }
+
 

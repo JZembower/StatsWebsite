@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANOVA Analysis</title>
     <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>ANOVA Analysis</h1>
+    
     <form onsubmit="event.preventDefault(); runAnalysis('ANOVA');">
-        <label for="fileInput">Upload Dataset:</label>
-        <input type="file" id="fileInput" name="file" onchange="uploadFile('ANOVA')" required>
+        <label for="fileInput">Upload CSV/Excel:</label>
+        <input type="file" id="fileInput" name="file" onchange="uploadFile('ANOVA', 'fileInput')" required>
 
         <div id="columnSelection" style="display:none;">
             <label for="dependentVar">Dependent Variable:</label>
@@ -23,7 +23,9 @@
 
         <button type="submit">Analyze</button>
     </form>
+
     <h2>Results:</h2>
     <div id="output"></div>
 </body>
 </html>
+
