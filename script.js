@@ -1,5 +1,6 @@
-const backendUrl = "https://spm-backend.onrender.com"; 
+const backendUrl = "http://127.0.0.1:5000"; 
 
+// Function to handle file upload and populate column selection
 async function uploadFile(page, fileInputId, columnDropdownId) {
     const fileInput = document.getElementById(fileInputId).files[0];
     if (!fileInput) {
@@ -11,7 +12,7 @@ async function uploadFile(page, fileInputId, columnDropdownId) {
     formData.append("file", fileInput);
 
     try {
-        const response = await fetch(`${backendUrl}/upload/`, { 
+        const response = await fetch(`${backendUrl}/upload`, { 
             method: "POST", 
             body: formData 
         });
@@ -22,96 +23,46 @@ async function uploadFile(page, fileInputId, columnDropdownId) {
 
         const data = await response.json();
         document.getElementById("columnSelection").style.display = "block";
-
-        // Update the correct dropdown
         populateDropdown(columnDropdownId, data.columns);
-
     } catch (error) {
         console.error("Fetch error:", error);
         alert("Error uploading file: " + error.message);
     }
 }
 
-
 // Populate dropdowns with column names
 function populateDropdown(elementId, columns) {
     const select = document.getElementById(elementId);
-    select.innerHTML = ""; // Clear previous options
+    select.innerHTML = "";
     columns.forEach(col => select.add(new Option(col, col)));
 }
 
-// Function to handle different analyses dynamically
+// Function to handle SPM Moving Average Overlay Analysis
 async function runAnalysis(page) {
-    let formData = new FormData();
-    let endpoint = "";
+    const file1 = document.getElementById('fileInput1').files[0];
+    const file2 = document.getElementById('fileInput2').files[0];
+    const col1 = document.getElementById("colLeft").value;
+    const col2 = document.getElementById("colRight").value;
 
-    switch (page) {
-        case "PCA":
-            const pcaFile = document.getElementById("fileInput").files[0];
-            if (!pcaFile) {
-                alert("Please upload a file.");
-                return;
-            }
-            formData.append("file", pcaFile);
-            formData.append("components", document.getElementById("components").value || 2);
-            endpoint = "/pca/";
-            break;
-
-        case "TTest":
-            const tTestFile = document.getElementById("fileInput").files[0];
-            if (!tTestFile) {
-                alert("Please upload a file.");
-                return;
-            }
-            formData.append("file", tTestFile);
-            formData.append("col_left", document.getElementById("colLeft").value);
-            formData.append("col_right", document.getElementById("colRight").value);
-            endpoint = "/spm/";
-            break;
-
-        case "SPM":
-            const file1 = document.getElementById("fileInput1").files[0];
-            const file2 = document.getElementById("fileInput2").files[0];
-            const col1 = document.getElementById("colLeft").value;
-            const col2 = document.getElementById("colRight").value;
-
-            if (!file1 || !file2 || !col1 || !col2) {
-                alert("Please upload both datasets and select columns.");
-                return;
-            }
-
-            formData.append("file1", file1);
-            formData.append("file2", file2);
-            formData.append("col1", col1);
-            formData.append("col2", col2);
-            endpoint = "/moving_avg_overlay/";
-            break;
-
-        case "ANOVA":
-            const anovaFile = document.getElementById("fileInput").files[0];
-            if (!anovaFile) {
-                alert("Please upload a file.");
-                return;
-            }
-            formData.append("file", anovaFile);
-            formData.append("dependent_var", document.getElementById("dependentVar").value);
-            formData.append("independent_var", document.getElementById("independentVar").value);
-            endpoint = "/anova/";
-            break;
-
-        default:
-            alert("Invalid analysis type.");
-            return;
+    if (!file1 || !file2 || !col1 || !col2) {
+        alert("Please upload both datasets and select columns.");
+        return;
     }
 
+    const formData = new FormData();
+    formData.append("file1", file1);
+    formData.append("file2", file2);
+    formData.append("col1", col1);
+    formData.append("col2", col2);
+
     try {
-        const response = await fetch(`${backendUrl}${endpoint}`, { method: "POST", body: formData });
+        const response = await fetch(`${backendUrl}/moving_avg_overlay`, { method: "POST", body: formData });
         if (!response.ok) throw new Error("Analysis failed");
 
-        // Display the analysis result as an image
         const imageUrl = URL.createObjectURL(await response.blob());
-        document.getElementById("output").innerHTML = `<img src="${imageUrl}" alt="${page} Analysis Result">`;
+        document.getElementById("output").innerHTML = `<img src="${imageUrl}" alt="SPM Analysis Result">`;
     } catch (error) {
         alert("Error: " + error.message);
     }
 }
+
