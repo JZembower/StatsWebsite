@@ -1,4 +1,4 @@
-const backendUrl = "http://127.0.0.1:5000"; // Change this when deploying
+const backendUrl = "https://spm-backend-rwbm.onrender.com";
 
 // Function to handle file upload and populate column selection
 async function uploadFile(page, fileInputId) {
