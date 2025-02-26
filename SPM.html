@@ -11,16 +11,19 @@
     
     <form onsubmit="event.preventDefault(); runAnalysis('SPM');">
         <label for="fileInput1">Upload First Dataset:</label>
-        <input type="file" id="fileInput1" name="file1" onchange="uploadFile('SPM', 'fileInput1', 'colLeft')" required>
+        <input type="file" id="fileInput1" name="file1" onchange="uploadFile('SPM', 'fileInput1')" required>
 
         <label for="fileInput2">Upload Second Dataset:</label>
-        <input type="file" id="fileInput2" name="file2" onchange="uploadFile('SPM', 'fileInput2', 'colRight')" required>
+        <input type="file" id="fileInput2" name="file2" onchange="uploadFile('SPM', 'fileInput2')" required>
 
-        <label for="colLeft">Select Column from First Dataset:</label>
-        <select id="colLeft" name="colLeft"></select>
+        <!-- Newly added section to fix the 'null' error -->
+        <div id="columnSelection" style="display: none;">
+            <label for="colLeft">Select Column from First Dataset:</label>
+            <select id="colLeft" name="colLeft"></select>
 
-        <label for="colRight">Select Column from Second Dataset:</label>
-        <select id="colRight" name="colRight"></select>
+            <label for="colRight">Select Column from Second Dataset:</label>
+            <select id="colRight" name="colRight"></select>
+        </div>
 
         <button type="submit">Analyze</button>
     </form>
@@ -29,3 +32,4 @@
     <div id="output"></div>
 </body>
 </html>
+

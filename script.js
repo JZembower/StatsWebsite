@@ -1,8 +1,7 @@
 const backendUrl = "https://spm-backend-rwbm.onrender.com";
 
-// Function to handle file upload and populate column selection
 async function uploadFile(page, fileInputId) {
-    const fileInput = document.getElementById(fileInputId).files[0];
+    const fileInput = document.getElementById(fileInputId)?.files[0];
     if (!fileInput) {
         alert("Please select a file.");
         return;
@@ -11,37 +10,29 @@ async function uploadFile(page, fileInputId) {
     const formData = new FormData();
     formData.append("file", fileInput);
 
-    // Set timeout to 2 minutes (120,000ms)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 120000);
-
     try {
-        const response = await fetch(`${backendUrl}/upload`, {
-            method: "POST",
-            body: formData,
-            signal: controller.signal // Prevent fetch timeout
+        const response = await fetch(`${backendUrl}/upload`, { 
+            method: "POST", 
+            body: formData 
         });
-
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error(`Upload failed with status: ${response.status}`);
         }
 
         const data = await response.json();
-        document.getElementById("columnSelection").style.display = "block";
+
+        // ✅ Only show columnSelection if it exists
+        const columnSelection = document.getElementById("columnSelection");
+        if (columnSelection) {
+            columnSelection.style.display = "block";
+        }
 
         if (document.getElementById("colLeft")) {
             populateDropdown("colLeft", data.columns);
         }
         if (document.getElementById("colRight")) {
             populateDropdown("colRight", data.columns);
-        }
-        if (document.getElementById("dependentVar")) {
-            populateDropdown("dependentVar", data.columns);
-        }
-        if (document.getElementById("independentVar")) {
-            populateDropdown("independentVar", data.columns);
         }
 
     } catch (error) {
