@@ -5,25 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPM Moving Average Overlay</title>
     <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>SPM Moving Average Overlay</h1>
+    
     <form onsubmit="event.preventDefault(); runAnalysis('SPM');">
-        <label for="fileInput">Upload Dataset:</label>
-        <input type="file" id="fileInput" name="file" onchange="uploadFile('SPM')" required>
+        <label for="fileInput1">Upload First Dataset:</label>
+        <input type="file" id="fileInput1" name="file1" onchange="uploadFile('SPM', 'fileInput1', 'colLeft')" required>
+
+        <label for="fileInput2">Upload Second Dataset:</label>
+        <input type="file" id="fileInput2" name="file2" onchange="uploadFile('SPM', 'fileInput2', 'colRight')" required>
 
         <div id="columnSelection" style="display:none;">
-            <label for="colLeft">Select Column 1:</label>
+            <label for="colLeft">Select Column from Dataset 1:</label>
             <select id="colLeft" name="colLeft"></select>
 
-            <label for="colRight">Select Column 2:</label>
+            <label for="colRight">Select Column from Dataset 2:</label>
             <select id="colRight" name="colRight"></select>
         </div>
 
         <button type="submit">Analyze</button>
     </form>
+
     <h2>Results:</h2>
     <div id="output"></div>
 </body>
 </html>
+
