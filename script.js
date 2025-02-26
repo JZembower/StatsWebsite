@@ -11,11 +11,18 @@ async function uploadFile(page, fileInputId) {
     const formData = new FormData();
     formData.append("file", fileInput);
 
+    // Set timeout to 2 minutes (120,000ms)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     try {
-        const response = await fetch(`${backendUrl}/upload`, { 
-            method: "POST", 
-            body: formData 
+        const response = await fetch(`${backendUrl}/upload`, {
+            method: "POST",
+            body: formData,
+            signal: controller.signal // Prevent fetch timeout
         });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             throw new Error(`Upload failed with status: ${response.status}`);
@@ -64,7 +71,7 @@ async function runAnalysis(page) {
             }
             formData.append("file", pcaFile);
             formData.append("components", document.getElementById("components").value || 2);
-            endpoint = "/pca/";
+            endpoint = "/pca";
             break;
 
         case "TTest":
@@ -76,7 +83,7 @@ async function runAnalysis(page) {
             formData.append("file", tTestFile);
             formData.append("col_left", document.getElementById("colLeft").value);
             formData.append("col_right", document.getElementById("colRight").value);
-            endpoint = "/ttest/";
+            endpoint = "/ttest"; // Ensure this exists in Flask
             break;
 
         case "ANOVA":
@@ -88,7 +95,7 @@ async function runAnalysis(page) {
             formData.append("file", anovaFile);
             formData.append("dependent_var", document.getElementById("dependentVar").value);
             formData.append("independent_var", document.getElementById("independentVar").value);
-            endpoint = "/anova/";
+            endpoint = "/anova";
             break;
 
         default:
@@ -97,14 +104,44 @@ async function runAnalysis(page) {
     }
 
     try {
-        const response = await fetch(`${backendUrl}${endpoint}`, { method: "POST", body: formData });
-        if (!response.ok) throw new Error("Analysis failed");
+        // Set timeout to 2 minutes (120,000ms)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+        const response = await fetch(`${backendUrl}${endpoint}`, {
+            method: "POST",
+            body: formData,
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Analysis failed with status: ${response.status}`);
+        }
 
         const imageUrl = URL.createObjectURL(await response.blob());
         document.getElementById("output").innerHTML = `<img src="${imageUrl}" alt="${page} Analysis Result">`;
+
     } catch (error) {
+        console.error("Fetch error:", error);
         alert("Error: " + error.message);
     }
 }
+
+// Function to test API connection
+async function testBackendConnection() {
+    try {
+        const response = await fetch(`${backendUrl}/`);
+        const data = await response.json();
+        console.log("Backend connection successful:", data);
+    } catch (error) {
+        console.error("Backend connection error:", error);
+    }
+}
+
+// Run this function when the page loads
+testBackendConnection();
+
 
 
