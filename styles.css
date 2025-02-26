@@ -7,7 +7,7 @@ body {
     text-align: center;
 }
 
-/* Header */
+/* Page Headers */
 h1 {
     color: #333;
     margin-top: 20px;
@@ -105,4 +105,33 @@ button:hover {
         display: block;
         margin: 10px 0;
     }
+}
+body.pca {
+    background-color: #ffebcd; /* Light peach */
+}
+
+h1.pca {
+    color: #ff4500; /* Orange-Red */
+}
+
+body.anova {
+    background-color: #e6ffe6; /* Light Green */
+}
+
+h1.anova {
+    color: #008000; /* Green */
+}
+body.ttest {
+    background-color: #e0f7ff; /* Light Blue */
+}
+
+h1.ttest {
+    color: #0056b3; /* Dark Blue */
+}
+body.spm {
+    background-color: #f3e6ff; /* Light Purple */
+}
+
+h1.spm {
+    color: #800080; /* Purple */
 }
