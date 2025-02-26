@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPM Analysis</title>
+    <title>Statistical Analysis</title>
     <script defer src="script.js"></script>
 </head>
 <body>
-    <h1>SPM Paired T-Test Analysis</h1>
-    <input type="file" id="fileInput" accept=".csv, .xlsx">
-    <button onclick="uploadFile()">Upload File</button>
+    <header>
+        <button onclick="location.href='SPM.html'">Go to SPM Analysis</button>
+    </header>
+    <h1>Statistical Analysis</h1>
+    <p>This website allows you to perform various statistical analyses including SPM, PCA, T-tests, and more.
+    Upload your data files to get started and select the columns you want to analyze.</p>
+    <input type="file" id="fileInput1" accept=".csv, .xlsx">
+    <button onclick="uploadFile1()">Upload File 1</button>
+    <input type="file" id="fileInput2" accept=".csv, .xlsx">
+    <button onclick="uploadFile2()">Upload File 2</button>
     <div id="columnSelection" style="display: none;">
         <h3>Select Columns</h3>
         <select id="colLeft"></select>
