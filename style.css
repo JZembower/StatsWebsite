@@ -9,7 +9,7 @@ body {
 
 /* Header Styles */
 header {
-    background-color: #4CAF50;
+    background-color: #000; /* Changed to black */
     color: white;
     padding: 1rem;
     text-align: center;
@@ -41,7 +41,7 @@ main {
 
 /* Footer Styles */
 footer {
-    background-color: #333;
+    background-color: #000; /* Changed to black */
     color: white;
     text-align: center;
     padding: 10px 0;
