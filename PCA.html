@@ -4,33 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCA Analysis</title>
-    <script src="https://cdn.jsdelivr.net/npm/ml-pca@1.0.0/dist/ml-pca.min.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>PCA Analysis</h1>
-    <input type="file" id="fileInput" accept=".csv">
-    <button onclick="performPCA()">Perform PCA</button>
-    <pre id="output"></pre>
+    <form onsubmit="event.preventDefault(); runAnalysis('PCA');">
+        <label for="fileInput">Upload CSV/Excel:</label>
+        <input type="file" id="fileInput" name="file" onchange="uploadFile('PCA')" required>
+        
+        <label for="components">Number of Components:</label>
+        <input type="number" id="components" name="components" value="2">
 
-    <script>
-        function performPCA() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please upload a file first.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const csvData = event.target.result;
-                const data = csvData.split('\n').map(row => row.split(',').map(Number));
-                const pca = new PCA(data);
-                const result = pca.predict(data);
-                document.getElementById('output').textContent = JSON.stringify(result, null, 2);
-            };
-            reader.readAsText(file);
-        }
-    </script>
+        <button type="submit">Analyze</button>
+    </form>
+    <h2>Results:</h2>
+    <div id="output"></div>
 </body>
 </html>
+

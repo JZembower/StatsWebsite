@@ -4,59 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>T-Test Analysis</title>
-    <script>
-        function calculateTTest() {
-            const group1 = document.getElementById('group1').value.split(',').map(Number);
-            const group2 = document.getElementById('group2').value.split(',').map(Number);
-
-            const mean = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
-            const variance = arr => {
-                const m = mean(arr);
-                return arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / (arr.length - 1);
-            };
-
-            const mean1 = mean(group1);
-            const mean2 = mean(group2);
-            const var1 = variance(group1);
-            const var2 = variance(group2);
-
-            const tValue = (mean1 - mean2) / Math.sqrt((var1 / group1.length) + (var2 / group2.length));
-            document.getElementById('result').innerText = `T-Value: ${tValue.toFixed(2)}`;
-        }
-
-        function updateColumns() {
-            const columns = document.getElementById('columns').value.split(',');
-            const group1Select = document.getElementById('group1');
-            const group2Select = document.getElementById('group2');
-
-            group1Select.innerHTML = '';
-            group2Select.innerHTML = '';
-
-            columns.forEach(column => {
-                const option1 = document.createElement('option');
-                option1.value = column;
-                option1.text = column;
-                group1Select.appendChild(option1);
-
-                const option2 = document.createElement('option');
-                option2.value = column;
-                option2.text = column;
-                group2Select.appendChild(option2);
-            });
-        }
-    </script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>T-Test Analysis</h1>
-    <form onsubmit="event.preventDefault(); calculateTTest();">
-        <label for="columns">Columns (comma separated):</label><br>
-        <input type="text" id="columns" name="columns" oninput="updateColumns()"><br><br>
-        <label for="group1">Group 1 Column:</label><br>
-        <select id="group1" name="group1"></select><br><br>
-        <label for="group2">Group 2 Column:</label><br>
-        <select id="group2" name="group2"></select><br><br>
-        <input type="submit" value="Calculate T-Test">
+    <form onsubmit="event.preventDefault(); runAnalysis('TTest');">
+        <label for="fileInput">Upload Dataset:</label>
+        <input type="file" id="fileInput" name="file" onchange="uploadFile('TTest')" required>
+
+        <div id="columnSelection" style="display:none;">
+            <label for="colLeft">Column 1:</label>
+            <select id="colLeft" name="colLeft"></select>
+
+            <label for="colRight">Column 2:</label>
+            <select id="colRight" name="colRight"></select>
+        </div>
+
+        <button type="submit">Analyze</button>
     </form>
-    <p id="result"></p>
+    <h2>Results:</h2>
+    <div id="output"></div>
 </body>
 </html>

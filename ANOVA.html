@@ -4,34 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANOVA Analysis</title>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <h1>ANOVA Analysis</h1>
-    <form id="anovaForm">
-        <label for="fileUpload">Upload your data file:</label>
-        <input type="file" id="fileUpload" accept=".csv">
-        <button type="button" onclick="performANOVA()">Analyze</button>
+    <form onsubmit="event.preventDefault(); runAnalysis('ANOVA');">
+        <label for="fileInput">Upload Dataset:</label>
+        <input type="file" id="fileInput" name="file" onchange="uploadFile('ANOVA')" required>
+
+        <div id="columnSelection" style="display:none;">
+            <label for="dependentVar">Dependent Variable:</label>
+            <select id="dependentVar" name="dependentVar"></select>
+
+            <label for="independentVar">Independent Variable:</label>
+            <select id="independentVar" name="independentVar"></select>
+        </div>
+
+        <button type="submit">Analyze</button>
     </form>
-    <div id="results"></div>
-
-    <script>
-        function performANOVA() {
-            const fileInput = document.getElementById('fileUpload');
-            const file = fileInput.files[0];
-            if (!file) {
-                alert('Please upload a file.');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const data = event.target.result;
-                // Here you would process the data and perform ANOVA analysis
-                // This is just a placeholder for demonstration purposes
-                document.getElementById('results').innerText = 'ANOVA analysis results will be displayed here.';
-            };
-            reader.readAsText(file);
-        }
-    </script>
+    <h2>Results:</h2>
+    <div id="output"></div>
 </body>
 </html>
