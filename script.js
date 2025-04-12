@@ -48,33 +48,21 @@ async function runAnalysis(page) {
     let formData = new FormData();
     let endpoint = "";
     const outputDiv = document.getElementById("output");
-    outputDiv.innerHTML = '<div class="spinner">Loading...</div>'; // Show spinner
+    outputDiv.innerHTML = '<div class="spinner">Loading...</div>';
 
     switch (page) {
         case "PCA":
             const pcaFile = document.getElementById("fileInput").files[0];
             if (!pcaFile) {
                 alert("Please upload a file.");
+                outputDiv.innerHTML = "";
                 return;
             }
             formData.append("file", pcaFile);
             formData.append("components", document.getElementById("components").value || 2);
             endpoint = "/pca";
             break;
-
-        case "TTest":
-            const tTestFile = document.getElementById("fileInput").files[0];
-            if (!tTestFile) {
-                alert("Please upload a file.");
-                return;
-            }
-            formData.append("file", tTestFile);
-            formData.append("col_left", document.getElementById("colLeft").value);
-            formData.append("col_right", document.getElementById("colRight").value);
-            endpoint = "/ttest"; // Ensure this exists in Flask
-            break;
-
-            case "ANOVA":
+        case "ANOVA":
             const anovaFile = document.getElementById("fileInput").files[0];
             const dependentVar = document.getElementById("dependentVar").value;
             const independentVar = document.getElementById("independentVar").value;
@@ -88,41 +76,42 @@ async function runAnalysis(page) {
             formData.append("independent_var", independentVar);
             endpoint = "/anova";
             break;
-        
-                case "SPM":
-                    const file1 = document.getElementById("fileInput1").files[0];
-                    const file2 = document.getElementById("fileInput2").files[0];
-                    const col1 = document.getElementById("colLeft").value;
-                    const col2 = document.getElementById("colRight").value;
-                    if (!file1 || !file2) {
-                        alert("Please upload both files.");
-                        outputDiv.innerHTML = "";
-                        return;
-                    }
-                    if (!col1 || !col2) {
-                        alert("Please select columns for both datasets.");
-                        outputDiv.innerHTML = "";
-                        return;
-                    }
-                    formData.append("file1", file1);
-                    formData.append("file2", file2);
-                    formData.append("col1", col1);
-                    formData.append("col2", col2);
-                    endpoint = "/moving_avg_overlay";
-                    break;
-
+        case "SPM":
+            const file1 = document.getElementById("fileInput1").files[0];
+            const file2 = document.getElementById("fileInput2").files[0];
+            const col1 = document.getElementById("colLeft").value;
+            const col2 = document.getElementById("colRight").value;
+            if (!file1 || !file2 || !col1 || !col2) {
+                alert("Please upload both files and select columns.");
+                outputDiv.innerHTML = "";
+                return;
+            }
+            formData.append("file1", file1);
+            formData.append("file2", file2);
+            formData.append("col1", col1);
+            formData.append("col2", col2);
+            endpoint = "/moving_avg_overlay";
+            break;
+        case "TTest":
+            alert("T-Test is not implemented yet.");
+            outputDiv.innerHTML = "";
+            return;
         default:
             alert("Invalid analysis type.");
+            outputDiv.innerHTML = "";
             return;
     }
+
     try {
+        const abortController = new AbortController(); // Renamed for clarity
+        const timeoutId = setTimeout(() => abortController.abort(), 180000);
         const response = await fetch(`${backendUrl}${endpoint}`, {
             method: "POST",
             body: formData,
-            signal: controller.signal
+            signal: abortController.signal
         });
         clearTimeout(timeoutId);
-    
+
         const contentType = response.headers.get("content-type");
         if (!response.ok) {
             if (contentType && contentType.includes("application/json")) {
@@ -134,7 +123,7 @@ async function runAnalysis(page) {
                 throw new Error(`Analysis failed with status ${response.status}: ${text.slice(0, 50)}...`);
             }
         }
-    
+
         if (contentType && contentType.includes("image/png")) {
             const imageUrl = URL.createObjectURL(await response.blob());
             outputDiv.innerHTML = `<img src="${imageUrl}" alt="${page} Analysis Result">`;
