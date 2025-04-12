@@ -20,28 +20,29 @@ async function uploadFile(page, fileInputId) {
         if (!data.columns) {
             throw new Error("No columns returned from upload.");
         }
+        // Sanitize column names
+        const cleanColumns = data.columns.map(col => col.replace(/[\s\-()]/g, "_"));
         const columnSelection = document.getElementById("columnSelection");
         if (columnSelection) {
             columnSelection.style.display = "block";
         }
         if (document.getElementById("dependentVar")) {
-            populateDropdown("dependentVar", data.columns);
+            populateDropdown("dependentVar", cleanColumns);
         }
         if (document.getElementById("independentVar")) {
-            populateDropdown("independentVar", data.columns);
+            populateDropdown("independentVar", cleanColumns);
         }
         if (document.getElementById("colLeft")) {
-            populateDropdown("colLeft", data.columns);
+            populateDropdown("colLeft", cleanColumns);
         }
         if (document.getElementById("colRight")) {
-            populateDropdown("colRight", data.columns);
+            populateDropdown("colRight", cleanColumns);
         }
     } catch (error) {
         console.error("Fetch error:", error);
         alert("Error uploading file: " + error.message);
     }
 }
-
 // Function to handle tab switching
 async function runAnalysis(page) {
     let formData = new FormData();
@@ -115,23 +116,26 @@ async function runAnalysis(page) {
             return;
     }
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 180000);
         const response = await fetch(`${backendUrl}${endpoint}`, {
             method: "POST",
             body: formData,
             signal: controller.signal
         });
         clearTimeout(timeoutId);
-
+    
         const contentType = response.headers.get("content-type");
         if (!response.ok) {
-            const text = await response.text();
-            console.error(`Failed request: status=${response.status}, content-type=${contentType}, response=${text.slice(0, 100)}`);
-            throw new Error(`Analysis failed with status ${response.status}`);
+            if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                throw new Error(data.error || `Analysis failed with status ${response.status}`);
+            } else {
+                const text = await response.text();
+                console.error(`Non-JSON response: status=${response.status}, content-type=${contentType}, response=${text.slice(0, 100)}`);
+                throw new Error(`Analysis failed with status ${response.status}: ${text.slice(0, 50)}...`);
+            }
         }
-
-        if (contentType.includes("image/png")) {
+    
+        if (contentType && contentType.includes("image/png")) {
             const imageUrl = URL.createObjectURL(await response.blob());
             outputDiv.innerHTML = `<img src="${imageUrl}" alt="${page} Analysis Result">`;
         } else {
