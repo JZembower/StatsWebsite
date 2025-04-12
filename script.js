@@ -74,24 +74,19 @@ async function runAnalysis(page) {
             break;
 
             case "ANOVA":
-                const anovaFile = document.getElementById("fileInput").files[0];
-                const dependentVar = document.getElementById("dependentVar").value;
-                const independentVar = document.getElementById("independentVar").value;
-                if (!anovaFile) {
-                    alert("Please upload a file.");
-                    outputDiv.innerHTML = "";
-                    return;
-                }
-                if (!dependentVar || !independentVar) {
-                    alert("Please select both dependent and independent variables.");
-                    outputDiv.innerHTML = "";
-                    return;
-                }
-                formData.append("file", anovaFile);
-                formData.append("dependent_var", dependentVar);
-                formData.append("independent_var", independentVar);
-                endpoint = "/anova";
-                break;
+            const anovaFile = document.getElementById("fileInput").files[0];
+            const dependentVar = document.getElementById("dependentVar").value;
+            const independentVar = document.getElementById("independentVar").value;
+            if (!anovaFile || !dependentVar || !independentVar) {
+                alert("Please select file and variables.");
+                outputDiv.innerHTML = "";
+                return;
+            }
+            formData.append("file", anovaFile);
+            formData.append("dependent_var", dependentVar);
+            formData.append("independent_var", independentVar);
+            endpoint = "/anova";
+            break;
         
                 case "SPM":
                     const file1 = document.getElementById("fileInput1").files[0];
@@ -121,27 +116,32 @@ async function runAnalysis(page) {
     }
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
+        const timeoutId = setTimeout(() => controller.abort(), 180000);
         const response = await fetch(`${backendUrl}${endpoint}`, {
             method: "POST",
             body: formData,
             signal: controller.signal
         });
         clearTimeout(timeoutId);
+
+        const contentType = response.headers.get("content-type");
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Analysis failed with status: ${response.status}`);
+            const text = await response.text();
+            console.error(`Failed request: status=${response.status}, content-type=${contentType}, response=${text.slice(0, 100)}`);
+            throw new Error(`Analysis failed with status ${response.status}`);
         }
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-        outputDiv.innerHTML = `
-            <img src="${imageUrl}" alt="${page} Analysis Result">
-            <button onclick="downloadImage('${imageUrl}', '${page}_result.png')">Download Result</button>
-        `;
+
+        if (contentType.includes("image/png")) {
+            const imageUrl = URL.createObjectURL(await response.blob());
+            outputDiv.innerHTML = `<img src="${imageUrl}" alt="${page} Analysis Result">`;
+        } else {
+            const data = await response.json();
+            throw new Error(data.error || "Unexpected response format");
+        }
     } catch (error) {
         console.error("Fetch error:", error);
         outputDiv.innerHTML = "";
-        alert("Error: " + error.message);
+        alert(`Error: ${error.message}`);
     }
 }
 function downloadImage(url, filename) {
