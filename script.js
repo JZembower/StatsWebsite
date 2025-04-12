@@ -8,8 +8,6 @@ async function uploadFile(page, fileInputId) {
     }
     const formData = new FormData();
     formData.append("file", fileInput);
-    const rowLimit = document.getElementById("rowLimit")?.value || 0;
-    formData.append("row_limit", rowLimit);
     try {
         const response = await fetch(`${backendUrl}/upload`, { 
             method: "POST", 
@@ -19,9 +17,18 @@ async function uploadFile(page, fileInputId) {
             throw new Error(`Upload failed with status: ${response.status}`);
         }
         const data = await response.json();
+        if (!data.columns) {
+            throw new Error("No columns returned from upload.");
+        }
         const columnSelection = document.getElementById("columnSelection");
         if (columnSelection) {
             columnSelection.style.display = "block";
+        }
+        if (document.getElementById("dependentVar")) {
+            populateDropdown("dependentVar", data.columns);
+        }
+        if (document.getElementById("independentVar")) {
+            populateDropdown("independentVar", data.columns);
         }
         if (document.getElementById("colLeft")) {
             populateDropdown("colLeft", data.columns);
@@ -66,31 +73,47 @@ async function runAnalysis(page) {
             endpoint = "/ttest"; // Ensure this exists in Flask
             break;
 
-        case "ANOVA":
-            const anovaFile = document.getElementById("fileInput").files[0];
-            if (!anovaFile) {
-                alert("Please upload a file.");
-                return;
-            }
-            formData.append("file", anovaFile);
-            formData.append("dependent_var", document.getElementById("dependentVar").value);
-            formData.append("independent_var", document.getElementById("independentVar").value);
-            endpoint = "/anova";
-            break;
+            case "ANOVA":
+                const anovaFile = document.getElementById("fileInput").files[0];
+                const dependentVar = document.getElementById("dependentVar").value;
+                const independentVar = document.getElementById("independentVar").value;
+                if (!anovaFile) {
+                    alert("Please upload a file.");
+                    outputDiv.innerHTML = "";
+                    return;
+                }
+                if (!dependentVar || !independentVar) {
+                    alert("Please select both dependent and independent variables.");
+                    outputDiv.innerHTML = "";
+                    return;
+                }
+                formData.append("file", anovaFile);
+                formData.append("dependent_var", dependentVar);
+                formData.append("independent_var", independentVar);
+                endpoint = "/anova";
+                break;
         
-        case "SPM":
-            const file1 = document.getElementById("fileInput1").files[0];
-            const file2 = document.getElementById("fileInput2").files[0];
-            if (!file1 || !file2) {
-                alert("Please upload both files.");
-                return;
-            }
-            formData.append("file1", file1);
-            formData.append("file2", file2);
-            formData.append("col1", document.getElementById("colLeft").value);
-            formData.append("col2", document.getElementById("colRight").value);
-            endpoint = "/moving_avg_overlay";
-            break;
+                case "SPM":
+                    const file1 = document.getElementById("fileInput1").files[0];
+                    const file2 = document.getElementById("fileInput2").files[0];
+                    const col1 = document.getElementById("colLeft").value;
+                    const col2 = document.getElementById("colRight").value;
+                    if (!file1 || !file2) {
+                        alert("Please upload both files.");
+                        outputDiv.innerHTML = "";
+                        return;
+                    }
+                    if (!col1 || !col2) {
+                        alert("Please select columns for both datasets.");
+                        outputDiv.innerHTML = "";
+                        return;
+                    }
+                    formData.append("file1", file1);
+                    formData.append("file2", file2);
+                    formData.append("col1", col1);
+                    formData.append("col2", col2);
+                    endpoint = "/moving_avg_overlay";
+                    break;
 
         default:
             alert("Invalid analysis type.");
