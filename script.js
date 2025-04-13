@@ -17,31 +17,50 @@ async function uploadFile(page, fileInputId) {
             throw new Error(`Upload failed with status: ${response.status}`);
         }
         const data = await response.json();
-        if (!data.columns) {
-            throw new Error("No columns returned from upload.");
+        if (!data.columns || !data.dtypes) {
+            throw new Error("No columns or dtypes returned from upload.");
         }
-        // Sanitize column names
-        const cleanColumns = data.columns.map(col => col.replace(/[\s\-()]/g, "_"));
+        console.log("Uploaded columns:", data.columns, "dtypes:", data.dtypes);
+        const columns = data.columns;
+        // Separate numeric and categorical columns
+        const numericCols = [];
+        const categoricalCols = [];
+        data.dtypes.forEach((dtype, i) => {
+            if (["float64", "int64"].includes(dtype)) {
+                numericCols.push(columns[i]);
+            } else {
+                categoricalCols.push(columns[i]);
+            }
+        });
         const columnSelection = document.getElementById("columnSelection");
         if (columnSelection) {
             columnSelection.style.display = "block";
         }
         if (document.getElementById("dependentVar")) {
-            populateDropdown("dependentVar", cleanColumns);
+            populateDropdown("dependentVar", numericCols.length ? numericCols : columns);
         }
         if (document.getElementById("independentVar")) {
-            populateDropdown("independentVar", cleanColumns);
+            populateDropdown("independentVar", categoricalCols.length ? categoricalCols : columns);
         }
         if (document.getElementById("colLeft")) {
-            populateDropdown("colLeft", cleanColumns);
+            populateDropdown("colLeft", numericCols.length ? numericCols : columns);
         }
         if (document.getElementById("colRight")) {
-            populateDropdown("colRight", cleanColumns);
+            populateDropdown("colRight", numericCols.length ? numericCols : columns);
         }
     } catch (error) {
         console.error("Fetch error:", error);
         alert("Error uploading file: " + error.message);
     }
+}
+
+function populateDropdown(elementId, columns) {
+    const select = document.getElementById(elementId);
+    select.innerHTML = "";
+    columns.forEach(col => {
+        const option = new Option(col, col);
+        select.add(option);
+    });
 }
 // Function to handle tab switching
 async function runAnalysis(page) {
@@ -144,19 +163,6 @@ function downloadImage(url, filename) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-}
-function populateDropdown(elementId, columns) {
-    const select = document.getElementById(elementId);
-    select.innerHTML = "";
-    columns.forEach(col => select.add(new Option(col, col)));
-    // Prevent duplicate selections
-    select.addEventListener("change", function() {
-        const otherSelect = elementId === "colLeft" ? document.getElementById("colRight") : document.getElementById("colLeft");
-        if (otherSelect && otherSelect.value === select.value) {
-            alert("Please select different columns.");
-            select.value = "";
-        }
-    });
 }
 // Function to test API connection
 async function testBackendConnection() {
