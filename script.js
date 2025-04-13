@@ -20,28 +20,37 @@ async function uploadFile(page, fileInputId) {
         if (!data.columns) {
             throw new Error("No columns returned from upload.");
         }
-        // Sanitize column names
-        const cleanColumns = data.columns.map(col => col.replace(/[\s\-()]/g, "_"));
+        console.log("Uploaded columns:", data.columns);
+        const columns = data.columns;
         const columnSelection = document.getElementById("columnSelection");
         if (columnSelection) {
             columnSelection.style.display = "block";
         }
         if (document.getElementById("dependentVar")) {
-            populateDropdown("dependentVar", cleanColumns);
+            populateDropdown("dependentVar", columns);
         }
         if (document.getElementById("independentVar")) {
-            populateDropdown("independentVar", cleanColumns);
+            populateDropdown("independentVar", columns);
         }
         if (document.getElementById("colLeft")) {
-            populateDropdown("colLeft", cleanColumns);
+            populateDropdown("colLeft", columns);
         }
         if (document.getElementById("colRight")) {
-            populateDropdown("colRight", cleanColumns);
+            populateDropdown("colRight", columns);
         }
     } catch (error) {
         console.error("Fetch error:", error);
         alert("Error uploading file: " + error.message);
     }
+}
+
+function populateDropdown(elementId, columns) {
+    const select = document.getElementById(elementId);
+    select.innerHTML = "";
+    columns.forEach(col => {
+        const option = new Option(col, col);
+        select.add(option);
+    });
 }
 // Function to handle tab switching
 async function runAnalysis(page) {
@@ -144,19 +153,6 @@ function downloadImage(url, filename) {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-}
-function populateDropdown(elementId, columns) {
-    const select = document.getElementById(elementId);
-    select.innerHTML = "";
-    columns.forEach(col => select.add(new Option(col, col)));
-    // Prevent duplicate selections
-    select.addEventListener("change", function() {
-        const otherSelect = elementId === "colLeft" ? document.getElementById("colRight") : document.getElementById("colLeft");
-        if (otherSelect && otherSelect.value === select.value) {
-            alert("Please select different columns.");
-            select.value = "";
-        }
-    });
 }
 // Function to test API connection
 async function testBackendConnection() {
