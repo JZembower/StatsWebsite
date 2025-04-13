@@ -20,7 +20,6 @@ async function uploadFile(page, fileInputId) {
         if (!data.columns || !data.dtypes) {
             throw new Error("No columns or dtypes returned from upload.");
         }
-<<<<<<< HEAD
         console.log("Uploaded columns:", data.columns, "dtypes:", data.dtypes);
         const columns = data.columns;
         // Separate numeric and categorical columns
@@ -33,16 +32,11 @@ async function uploadFile(page, fileInputId) {
                 categoricalCols.push(columns[i]);
             }
         });
-=======
-        console.log("Uploaded columns:", data.columns);
-        const columns = data.columns;
->>>>>>> 983342e9b6a6afa87b4321f417f33ba9a5bb9aa7
         const columnSelection = document.getElementById("columnSelection");
         if (columnSelection) {
             columnSelection.style.display = "block";
         }
         if (document.getElementById("dependentVar")) {
-<<<<<<< HEAD
             populateDropdown("dependentVar", numericCols.length ? numericCols : columns);
         }
         if (document.getElementById("independentVar")) {
@@ -53,18 +47,6 @@ async function uploadFile(page, fileInputId) {
         }
         if (document.getElementById("colRight")) {
             populateDropdown("colRight", numericCols.length ? numericCols : columns);
-=======
-            populateDropdown("dependentVar", columns);
-        }
-        if (document.getElementById("independentVar")) {
-            populateDropdown("independentVar", columns);
-        }
-        if (document.getElementById("colLeft")) {
-            populateDropdown("colLeft", columns);
-        }
-        if (document.getElementById("colRight")) {
-            populateDropdown("colRight", columns);
->>>>>>> 983342e9b6a6afa87b4321f417f33ba9a5bb9aa7
         }
     } catch (error) {
         console.error("Fetch error:", error);
