@@ -87,6 +87,8 @@ async function runAnalysis(page) {
             formData.append("components", document.getElementById("components").value || 2);
             endpoint = "/pca";
             try {
+                const abortController = new AbortController(); // Define abortController here
+                const timeoutId = setTimeout(() => abortController.abort(), 180000); // 3-minute timeout
                 const response = await fetch(`${backendUrl}${endpoint}`, {
                     method: "POST",
                     body: formData,
