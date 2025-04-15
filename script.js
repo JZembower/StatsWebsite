@@ -22,38 +22,44 @@ async function uploadFile(page, fileInputId) {
         }
         console.log("Uploaded columns:", data.columns, "dtypes:", data.dtypes);
         const columns = data.columns;
-        // Separate numeric and categorical columns
         const numericCols = [];
         const categoricalCols = [];
+        const potentialIndependentCols = []; // For ANOVA independent variables
         data.dtypes.forEach((dtype, i) => {
-            if (["float64", "int64"].includes(dtype)) {
-                numericCols.push(columns[i]);
-            } else {
-                categoricalCols.push(columns[i]);
-            }
-        });
-        const columnSelection = document.getElementById("columnSelection");
-        if (columnSelection) {
-            columnSelection.style.display = "block";
+        if (["float64", "int64"].includes(dtype)) {
+            numericCols.push(columns[i]);
+        } else {
+            categoricalCols.push(columns[i]);
         }
-        if (document.getElementById("dependentVar")) {
-            populateDropdown("dependentVar", numericCols.length ? numericCols : columns);
-        }
-        if (document.getElementById("independentVar")) {
-            populateDropdown("independentVar", categoricalCols.length ? categoricalCols : columns);
-        }
-        if (document.getElementById("colLeft")) {
-            populateDropdown("colLeft", numericCols.length ? numericCols : columns);
-        }
-        if (document.getElementById("colRight")) {
-            populateDropdown("colRight", numericCols.length ? numericCols : columns);
-        }
-    } catch (error) {
-        console.error("Fetch error:", error);
-        alert("Error uploading file: " + error.message);
+        // Allow columns with sufficient unique values for ANOVA independent variable
+        potentialIndependentCols.push(columns[i]);
+    });
+    const columnSelection = document.getElementById("columnSelection");
+    if (columnSelection) {
+        columnSelection.style.display = "block";
     }
+    if (document.getElementById("dependentVar")) {
+        populateDropdown("dependentVar", numericCols.length ? numericCols : columns);
+    }
+    if (document.getElementById("independentVar")) {
+        populateDropdown("independentVar", potentialIndependentCols.length ? potentialIndependentCols : columns);
+    }
+    if (document.getElementById("colLeft")) {
+        populateDropdown("colLeft", numericCols.length ? numericCols : columns);
+    }
+    if (document.getElementById("colRight")) {
+        populateDropdown("colRight", numericCols.length ? numericCols : columns);
+    }
+} catch (error) {
+    console.error("Fetch error:", error);
+    alert("Error uploading file: " + error.message);
 }
-
+}
+// Call uploadFile for both inputs in SPM
+async function uploadSPMFiles() {
+    await uploadFile("SPM", "fileInput1");
+    await uploadFile("SPM", "fileInput2");
+}
 function populateDropdown(elementId, columns) {
     const select = document.getElementById(elementId);
     select.innerHTML = "";
@@ -80,6 +86,28 @@ async function runAnalysis(page) {
             formData.append("file", pcaFile);
             formData.append("components", document.getElementById("components").value || 2);
             endpoint = "/pca";
+            try {
+                const response = await fetch(`${backendUrl}${endpoint}`, {
+                    method: "POST",
+                    body: formData,
+                    signal: abortController.signal
+                });
+                clearTimeout(timeoutId);
+                const pcaData = JSON.parse(response.headers.get('X-PCA-Data') || '{}');
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || `Analysis failed with status ${response.status}`);
+                }
+                const imageUrl = URL.createObjectURL(await response.blob());
+                outputDiv.innerHTML = `
+                    <img src="${imageUrl}" alt="PCA Analysis Result">
+                    <p>Suggested Components: ${pcaData.suggested_components || 'N/A'}</p>
+                `;
+            } catch (error) {
+                console.error("Fetch error:", error);
+                outputDiv.innerHTML = "";
+                alert(`Error: ${error.message}`);
+            }
             break;
         case "ANOVA":
             const anovaFile = document.getElementById("fileInput").files[0];
@@ -95,26 +123,38 @@ async function runAnalysis(page) {
             formData.append("independent_var", independentVar);
             endpoint = "/anova";
             break;
-        case "SPM":
-            const file1 = document.getElementById("fileInput1").files[0];
-            const file2 = document.getElementById("fileInput2").files[0];
-            const col1 = document.getElementById("colLeft").value;
-            const col2 = document.getElementById("colRight").value;
-            if (!file1 || !file2 || !col1 || !col2) {
-                alert("Please upload both files and select columns.");
-                outputDiv.innerHTML = "";
-                return;
-            }
-            formData.append("file1", file1);
-            formData.append("file2", file2);
-            formData.append("col1", col1);
-            formData.append("col2", col2);
-            endpoint = "/moving_avg_overlay";
-            break;
-        case "TTest":
-            alert("T-Test is not implemented yet.");
-            outputDiv.innerHTML = "";
-            return;
+            case "SPM":
+                const file1 = document.getElementById("fileInput1").files[0];
+                const file2 = document.getElementById("fileInput2").files[0];
+                const col1 = document.getElementById("colLeft").value;
+                const col2 = document.getElementById("colRight").value;
+                const windowSize = document.getElementById("windowSize").value;
+                if (!file1 || !file2 || !col1 || !col2 || !windowSize) {
+                    alert("Please upload both files, select columns, and specify a window size.");
+                    outputDiv.innerHTML = "";
+                    return;
+                }
+                formData.append("file1", file1);
+                formData.append("file2", file2);
+                formData.append("col1", col1);
+                formData.append("col2", col2);
+                formData.append("window_size", windowSize);
+                endpoint = "/moving_avg_overlay";
+                break;
+            case "TTest":
+                const ttestFile = document.getElementById("fileInput").files[0];
+                const colLeft = document.getElementById("colLeft").value;
+                const colRight = document.getElementById("colRight").value;
+                if (!ttestFile || !colLeft || !colRight) {
+                    alert("Please upload a file and select both columns.");
+                    outputDiv.innerHTML = "";
+                    return;
+                }
+                formData.append("file", ttestFile);
+                formData.append("col_left", colLeft);
+                formData.append("col_right", colRight);
+                endpoint = "/ttest";
+                break;
         default:
             alert("Invalid analysis type.");
             outputDiv.innerHTML = "";

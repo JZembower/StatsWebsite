@@ -5,24 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPM Moving Average Overlay</title>
     <script src="script.js"></script>
+    <style>
+        /* Basic styling for clarity */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .spm {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        #columnSelection, #windowSizeSelection {
+            margin-top: 10px;
+        }
+        #output img {
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
-    <h1 class="spm">SPM</h1>
+    <h1 class="spm">SPM Moving Average Overlay</h1>
     
     <form onsubmit="event.preventDefault(); runAnalysis('SPM');">
-        <label for="fileInput1">Upload First Dataset:</label>
+        <!-- Step 1: Upload First Dataset -->
+        <h3>Step 1: Upload First Dataset</h3>
+        <label for="fileInput1">Select First Dataset:</label>
         <input type="file" id="fileInput1" name="file1" onchange="uploadFile('SPM', 'fileInput1')" required>
 
-        <label for="fileInput2">Upload Second Dataset:</label>
+        <!-- Step 2: Upload Second Dataset -->
+        <h3>Step 2: Upload Second Dataset</h3>
+        <label for="fileInput2">Select Second Dataset:</label>
         <input type="file" id="fileInput2" name="file2" onchange="uploadFile('SPM', 'fileInput2')" required>
 
-        <!-- Newly added section to fix the 'null' error -->
+        <!-- Step 3: Column Selection -->
+        <h3>Step 3: Select Columns</h3>
         <div id="columnSelection" style="display: none;">
             <label for="colLeft">Select Column from First Dataset:</label>
-            <select id="colLeft" name="colLeft"></select>
+            <select id="colLeft" name="colLeft" required></select>
 
             <label for="colRight">Select Column from Second Dataset:</label>
-            <select id="colRight" name="colRight"></select>
+            <select id="colRight" name="colRight" required></select>
+        </div>
+
+        <!-- Step 4: Configure Moving Average Window Size -->
+        <h3>Step 4: Configure Moving Average Window Size</h3>
+        <div id="windowSizeSelection">
+            <label for="windowSize">Moving Average Window Size:</label>
+            <input type="number" id="windowSize" name="windowSize" min="1" value="200" required>
         </div>
 
         <button type="submit">Analyze</button>
